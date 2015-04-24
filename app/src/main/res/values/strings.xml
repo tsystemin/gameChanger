@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">gameChanger</string>
+    <string name="facebook_app_id">1426896347605849</string>
+    <string name="title_activity_gc_register">GcRegisterActivity</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="error_incorrect_phone">Not a valid phone number</string>
+    <string name="title_activity_category">CategoryActivity</string>
+    <string name="title_activity_dbhelper">DBHelper</string>
+</resources>
