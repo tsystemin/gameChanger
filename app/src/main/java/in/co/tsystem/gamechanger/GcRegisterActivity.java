@@ -14,9 +14,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
@@ -47,7 +46,7 @@ public class GcRegisterActivity extends Activity implements LoaderManager.Loader
         setContentView(R.layout.activity_gc_register);
 
         // Set up the register form.
-        mNameView = (AutoCompleteTextView) findViewById(R.id.editText);
+        mNameView = (AutoCompleteTextView) findViewById(R.id.editText1);
         populateAutoComplete();
 
         mEmailView = (AutoCompleteTextView) findViewById(R.id.editText2);
@@ -116,12 +115,15 @@ public class GcRegisterActivity extends Activity implements LoaderManager.Loader
         String password = mPasswordView.getText().toString();
         String cpassword = mCPasswordView.getText().toString();
         String phone = mPhoneView.getText().toString();
+        String address = mAddrView.getText().toString();
+        String firstname = "A";
+        String lastname = "C";
 
         boolean cancel = false;
         View focusView = null;
 
         // Check for a valid password, if the user entered one.
-        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
+        /*if (TextUtils.isEmpty(password) | TextUtils.isEmpty(cpassword)) {
             mPasswordView.setError(getString(R.string.error_invalid_password));
             focusView = mPasswordView;
             cancel = true;
@@ -129,17 +131,21 @@ public class GcRegisterActivity extends Activity implements LoaderManager.Loader
             mPasswordView.setError(getString(R.string.error_incorrect_password));
             focusView = mPasswordView;
             cancel = true;
-        }
+        }*/
 
         // Check for a valid name
         if (TextUtils.isEmpty(name)) {
             mNameView.setError(getString(R.string.error_field_required));
             focusView = mNameView;
             cancel = true;
-        } else if (!isNameValid(email)) {
+        } /*else if (!isNameValid(name)) {
             mNameView.setError(getString(R.string.error_invalid_email));
             focusView = mNameView;
             cancel = true;
+        }*/ else {
+            String[] parseName = name.split("\\s");
+            firstname = parseName[0];
+            lastname = parseName[1];
         }
 
         // Check for a valid email address.
@@ -158,10 +164,15 @@ public class GcRegisterActivity extends Activity implements LoaderManager.Loader
             mPhoneView.setError(getString(R.string.error_field_required));
             focusView = mPhoneView;
             cancel = true;
-        } else if (!isPhoneValid(phone)) {
+        } /*else if (!isPhoneValid(phone)) {
             mPhoneView.setError(getString(R.string.error_incorrect_phone));
             focusView = mPhoneView;
             cancel = true;
+        }*/
+
+        // Check for valid address
+        if (TextUtils.isEmpty(address)) {
+            mAddrView.setError(getString((R.string.error_field_required)));
         }
 
         if (cancel) {
@@ -171,17 +182,30 @@ public class GcRegisterActivity extends Activity implements LoaderManager.Loader
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
+            JSONObject obj;
             showProgress(true);
-            String urlString = "http://192.168.0.102/opencart/?route=feed/rest_api/customerLogin&email=" + email + "&passwd=" + password + "&key=1234";
-            ServerComm sChannel = new ServerComm();
-            JSONObject response = sChannel.restRequest(urlString);
-            //Log.d("JSON", response.toString(2));
+            String registerUri = "http://192.168.43.214/opencart/index.php?route=feed/rest_api/addNewCustomer";
+            String postData = "{'firstname':" + firstname + ", 'lastname':" + lastname +
+                    ", 'email':" + email + ", 'telephone':" + phone +
+                    ", 'password':" + password + ", 'address':" + address + "}";
+            try {
+
+                obj = new JSONObject(postData);
+                Log.d("My App", obj.toString());
+                HttpPost sChannel = new HttpPost();
+                sChannel.processPost(registerUri, obj);
+            } catch (Throwable t) {
+                Log.e("My App", "Could not : \"" + t + "\"");
+            }
+
+
+            //Log.d("JSON", response.optString(2));
         }
     }
 
     private boolean isNameValid(String name) {
         //TODO: Put more checking logic
-        if (name.matches("[a-zA-Z]\\s+")) {
+        if (name.contains("[a-zA-Z]")) {
             return true;
         }
 
@@ -190,7 +214,7 @@ public class GcRegisterActivity extends Activity implements LoaderManager.Loader
 
     private boolean isPhoneValid(String phone) {
         //TODO: Put more checking logic
-        if (phone.matches("[0-9]\\+")) {
+        if (phone.contains("[0-9]")) {
             return true;
         }
 
@@ -208,7 +232,7 @@ public class GcRegisterActivity extends Activity implements LoaderManager.Loader
 
     private boolean isPasswordValid(String password) {
         //TODO: Put more checking logic
-        if ((password.length() > 4)) {
+        if ((password.length() > 3)) {
             return true;
         }
         return false;

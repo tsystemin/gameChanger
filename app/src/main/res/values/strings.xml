@@ -8,4 +8,5 @@
     <string name="error_incorrect_phone">Not a valid phone number</string>
     <string name="title_activity_category">CategoryActivity</string>
     <string name="title_activity_dbhelper">DBHelper</string>
+    <string name="title_activity_http_post">HttpPost</string>
 </resources>

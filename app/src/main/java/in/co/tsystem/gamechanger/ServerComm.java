@@ -33,7 +33,7 @@ public class ServerComm {
     public static JSONObject json = null;
     String uri;
 
-    public class RestService {
+    public static class RestService {
 
         public JSONObject doGet(String url) {
             //JSONObject json = null;

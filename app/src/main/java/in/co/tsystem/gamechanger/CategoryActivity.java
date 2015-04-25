@@ -25,7 +25,7 @@ import java.util.ArrayList;
 
 public class CategoryActivity extends Activity {
 
-    private static final int[] IMAGES = { R.drawable.button, R.drawable.pause };
+    /*private static final int[] IMAGES = { R.drawable.button, R.drawable.pause };
     private int mPosition = 0;
     private ImageSwitcher mImageSwitcher;
 
@@ -170,5 +170,5 @@ public class CategoryActivity extends Activity {
 
             //return url_new;
         }
-    }
+    }*/
 }
