@@ -5,8 +5,6 @@ package in.co.tsystem.gamechanger;
  */
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.EditText;
-import android.widget.TextView;
 
 import org.json.JSONObject;
 
@@ -21,39 +19,22 @@ import java.util.Iterator;
 
 public class HttpPost {
 
-    TextView content;
-    EditText fname, email, login, pass;
-    String postUri;
-    JSONObject json;
-
-    public Integer processPost(String uri, JSONObject req) {
-        postUri = uri;
-        json = req;
-        myRegAsyncTask tsk = new myRegAsyncTask();
-        tsk.execute();
-        try {Thread.sleep(5000);} catch (Exception e) {}
-
-        return 1;
-    }
-
-    // Create GetText Metod
-    public  void  GetText()  throws UnsupportedEncodingException
+    public  String  processPost(String uri, JSONObject req)  throws UnsupportedEncodingException
     {
         String text = "";
         String data = "";
         BufferedReader reader=null;
 
-        //StringBuilder sb = new StringBuilder();
         try {
-            Iterator x = json.keys();
+            Iterator x = req.keys();
             while (x.hasNext()) {
                 String key = (String) x.next();
                 data += URLEncoder.encode(key, "UTF-8")
-                        + "=" + URLEncoder.encode(json.get(key).toString(), "UTF-8");
+                        + "=" + URLEncoder.encode(req.get(key).toString(), "UTF-8");
             }
             // Send data
             // Defined URL  where to send data
-            URL url = new URL(postUri);
+            URL url = new URL(uri);
 
             // Send POST data request
             URLConnection conn = url.openConnection();
@@ -77,6 +58,8 @@ public class HttpPost {
 
             text = sb.toString();
             Log.d("RECEIVED", text);
+
+            return text;
         }
         catch(Exception ex)
         {
@@ -91,12 +74,10 @@ public class HttpPost {
             catch(Exception ex) {}
         }
 
-        // Show response on activity
-        //content.setText( text  );
-
+        return text;
     }
 
-    private class myRegAsyncTask extends AsyncTask<Void, Void, Void> {
+    /*private class myRegAsyncTask extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected void onPostExecute(Void result) {
@@ -111,9 +92,6 @@ public class HttpPost {
 
         @Override
         protected Void doInBackground(Void... arg0) {
-
-            //ServerComm.RestService re = new ServerComm.RestService();
-            //re.doGet(uri);
             try {
                 GetText();
             } catch (Exception e) {
@@ -122,6 +100,6 @@ public class HttpPost {
 
             return null;
         }
-    }
+    }*/
 
 }

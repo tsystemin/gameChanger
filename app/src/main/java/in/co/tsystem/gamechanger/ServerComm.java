@@ -3,9 +3,6 @@ package in.co.tsystem.gamechanger;
 /**
  * Created by diganta.paladhi on 20/04/15.
  */
-import android.os.AsyncTask;
-import android.util.Log;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -14,24 +11,14 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-
 public class ServerComm {
     public static JSONObject json = null;
-    String uri;
 
     public static class RestService {
 
@@ -104,38 +91,5 @@ public class ServerComm {
 
             return sb.toString();
         }
-    }
-
-
-    private class myAsyncTask extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected void onPostExecute(Void result) {
-            super.onPostExecute(result);
-
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected Void doInBackground(Void... arg0) {
-
-            RestService re = new RestService();
-            re.doGet(uri);
-
-            return null;
-        }
-    }
-
-    public JSONObject restRequest (String url){
-        uri = url;
-        myAsyncTask tsk = new myAsyncTask();
-        tsk.execute();
-        try {Thread.sleep(1000);} catch (Exception e) {}
-        //Log.d("JSON2", json.optString("success"));
-        return json;
     }
 }

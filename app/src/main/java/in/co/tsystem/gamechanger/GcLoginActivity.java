@@ -14,6 +14,7 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -23,13 +24,17 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.json.JSONObject;
+
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,6 +54,7 @@ public class GcLoginActivity extends Activity implements LoaderCallbacks<Cursor>
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+    private JSONObject response;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +70,8 @@ public class GcLoginActivity extends Activity implements LoaderCallbacks<Cursor>
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
                 if (id == R.id.login || id == EditorInfo.IME_NULL) {
+                    InputMethodManager imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
                     attemptLogin();
                     return true;
                 }
@@ -75,7 +83,9 @@ public class GcLoginActivity extends Activity implements LoaderCallbacks<Cursor>
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                    attemptLogin();
+                InputMethodManager imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+                attemptLogin();
             }
         });
 
@@ -131,15 +141,19 @@ public class GcLoginActivity extends Activity implements LoaderCallbacks<Cursor>
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
+
             String urlString = "http://192.168.0.102/opencart/?route=feed/rest_api/customerLogin&email=" + email + "&passwd=" + password + "&key=1234";
-            ServerComm sChannel = new ServerComm();
-            JSONObject response = sChannel.restRequest(urlString);
-            //Log.d("RESPONSE", response.optString("success"));
-            if(response.optString("success") == "TRUE") {
-                showProgress(false);
-                mLoginFormView.setVisibility(true ? View.GONE : View.VISIBLE);
-                Intent intent = new Intent(this, CategoryActivity.class);
-                startActivity(intent);
+
+            try {
+                myAsyncTask tsk = new myAsyncTask();
+                tsk.execute(urlString);
+                if (response.optString("success") == "TRUE") {
+                    Intent intent = new Intent(this, CategoryActivity.class);
+                    startActivity(intent);
+                    Log.d("CATEGORY", "Inflated category");
+                }
+            } catch (Exception e) {
+
             }
         }
     }
@@ -150,14 +164,6 @@ public class GcLoginActivity extends Activity implements LoaderCallbacks<Cursor>
             return true;
         }
 
-        return false;
-    }
-
-    private boolean isPasswordValid(String password) {
-        //TODO: Put more checking logic
-        if ((password.length() > 4)) {
-            return true;
-        }
         return false;
     }
 
@@ -250,5 +256,30 @@ public class GcLoginActivity extends Activity implements LoaderCallbacks<Cursor>
 
         mEmailView.setAdapter(adapter);
     }
+
+    // Async task to send login request in a separate thread
+    private class myAsyncTask extends AsyncTask<String, Void, Void> {
+
+        @Override
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+            showProgress(false);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Void doInBackground(String... arg0) {
+
+            ServerComm.RestService re = new ServerComm.RestService();
+            response = re.doGet(arg0[0]);
+
+            return null;
+        }
+    }
+
 }
 

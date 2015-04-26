@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -18,6 +19,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -39,6 +41,7 @@ public class GcRegisterActivity extends Activity implements LoaderManager.Loader
     private AutoCompleteTextView mEmailView, mNameView, mPhoneView, mAddrView;
     private EditText mPasswordView, mCPasswordView;
     private View mProgressView, mRegisterFormView;
+    String response;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +67,8 @@ public class GcRegisterActivity extends Activity implements LoaderManager.Loader
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
                 if (id == R.id.login || id == EditorInfo.IME_NULL) {
+                    InputMethodManager imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
                     attemptRegister();
                     return true;
                 }
@@ -78,6 +83,8 @@ public class GcRegisterActivity extends Activity implements LoaderManager.Loader
         mSignUpButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                InputMethodManager imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
                 attemptRegister();
             }
         });
@@ -116,22 +123,18 @@ public class GcRegisterActivity extends Activity implements LoaderManager.Loader
         String cpassword = mCPasswordView.getText().toString();
         String phone = mPhoneView.getText().toString();
         String address = mAddrView.getText().toString();
-        String firstname = "A";
-        String lastname = "C";
+        String firstname = "F";
+        String lastname = "L";
 
         boolean cancel = false;
         View focusView = null;
 
         // Check for a valid password, if the user entered one.
-        /*if (TextUtils.isEmpty(password) | TextUtils.isEmpty(cpassword)) {
+        if (TextUtils.isEmpty(password) | TextUtils.isEmpty(cpassword)) {
             mPasswordView.setError(getString(R.string.error_invalid_password));
             focusView = mPasswordView;
             cancel = true;
-        } else if (password != cpassword) {
-            mPasswordView.setError(getString(R.string.error_incorrect_password));
-            focusView = mPasswordView;
-            cancel = true;
-        }*/
+        }
 
         // Check for a valid name
         if (TextUtils.isEmpty(name)) {
@@ -182,22 +185,18 @@ public class GcRegisterActivity extends Activity implements LoaderManager.Loader
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
-            JSONObject obj;
             showProgress(true);
-            String registerUri = "http://192.168.43.214/opencart/index.php?route=feed/rest_api/addNewCustomer";
+            String registerUri = "http://192.168.0.102/opencart/index.php?route=feed/rest_api/addNewCustomer";
             String postData = "{'firstname':" + firstname + ", 'lastname':" + lastname +
                     ", 'email':" + email + ", 'telephone':" + phone +
                     ", 'password':" + password + ", 'address':" + address + "}";
             try {
+                myRegAsyncTask tsk = new myRegAsyncTask();
+                tsk.execute(registerUri, postData);
 
-                obj = new JSONObject(postData);
-                Log.d("My App", obj.toString());
-                HttpPost sChannel = new HttpPost();
-                sChannel.processPost(registerUri, obj);
             } catch (Throwable t) {
-                Log.e("My App", "Could not : \"" + t + "\"");
+                Log.e("My App", "Could not : " + t);
             }
-
 
             //Log.d("JSON", response.optString(2));
         }
@@ -232,7 +231,7 @@ public class GcRegisterActivity extends Activity implements LoaderManager.Loader
 
     private boolean isPasswordValid(String password) {
         //TODO: Put more checking logic
-        if ((password.length() > 3)) {
+        if ((password.length() > 4)) {
             return true;
         }
         return false;
@@ -326,5 +325,38 @@ public class GcRegisterActivity extends Activity implements LoaderManager.Loader
                         android.R.layout.simple_dropdown_item_1line, emailAddressCollection);
 
         mEmailView.setAdapter(adapter);
+    }
+
+    // Async task to send register request in a separate thread
+    private class myRegAsyncTask extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            showProgress(false);
+            mRegisterFormView.setVisibility(View.GONE);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected String doInBackground(String... arg0) {
+            JSONObject obj;
+            try {
+                obj = new JSONObject(arg0[1]);
+                Log.d("jsonobj", obj.toString());
+                Log.d("url", arg0[0]);
+                HttpPost sChannel = new HttpPost();
+                response = sChannel.processPost(arg0[0], obj);
+                Log.d("resp", response);
+            } catch (Exception e) {
+                Log.d("ASYNC CATCH", "exception");
+            }
+
+            return response;
+        }
     }
 }
