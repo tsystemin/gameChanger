@@ -2,7 +2,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    tools:context="in.co.tsystem.gamechanger.GcLoginActivity">
+    tools:context="in.co.tsystem.gamechanger.GcLoginActivity"
+    android:background="#ffff6a3d">
 
     <!-- Login progress -->
     <ProgressBar

@@ -32,8 +32,13 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,6 +60,7 @@ public class GcLoginActivity extends Activity implements LoaderCallbacks<Cursor>
     private View mProgressView;
     private View mLoginFormView;
     private JSONObject response;
+    HttpResponse http_response;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -140,22 +146,16 @@ public class GcLoginActivity extends Activity implements LoaderCallbacks<Cursor>
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
-            showProgress(true);
 
-            String urlString = "http://10.33.34.231/opencart/?route=feed/rest_api/customerLogin&email=" + email + "&passwd=" + password + "&key=1234";
+            showProgress(true);
+            String registerUri = "http://10.20.132.166/opencart/index.php?route=feed/rest_api/customerLogin&key=1234";
+            String postData = "{'email' : " + email + ", 'password' : " + password + "}";
 
             try {
-                myAsyncTask tsk = new myAsyncTask();
-                tsk.execute(urlString);
-                Log.d("Login Resp", response.toString());
-                if (response.optString("success") == "TRUE") {
-                    //Intent intent = new Intent(this, ViewCartActivity.class);
-                    Intent intent = new Intent(this, CategoryActivity.class);
-                    startActivity(intent);
-                    Log.d("CATEGORY", "Inflated category");
-                }
-            } catch (Exception e) {
-
+                myLoginAsyncTask tsk = new myLoginAsyncTask();
+                tsk.execute(registerUri, postData);
+            } catch (Throwable t) {
+                Log.e("My App", "Could not : " + t);
             }
         }
     }
@@ -259,13 +259,35 @@ public class GcLoginActivity extends Activity implements LoaderCallbacks<Cursor>
         mEmailView.setAdapter(adapter);
     }
 
-    // Async task to send login request in a separate thread
-    private class myAsyncTask extends AsyncTask<String, Void, Void> {
+    private class myLoginAsyncTask extends AsyncTask<String, Void, HttpResponse> {
 
         @Override
-        protected void onPostExecute(Void result) {
+        protected void onPostExecute(HttpResponse result) {
             super.onPostExecute(result);
             showProgress(false);
+            mLoginFormView.setVisibility(View.GONE);
+            try {
+                HttpEntity entity = http_response.getEntity();
+                InputStream inputStream = null;
+                String myresult = null;
+
+                inputStream = entity.getContent();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
+                StringBuilder sb = new StringBuilder();
+
+                String line = null;
+                while ((line = reader.readLine()) != null)
+                {
+                    sb.append(line + "\n");
+                }
+                myresult = sb.toString();
+                JSONObject json_result = new JSONObject(myresult);
+                String aJsonString = json_result.getString("success");
+                Log.d("ASYNC_CATCH", aJsonString);
+            } catch (Exception e) {
+                // Oops
+                Log.d("ASYNC_CATCH", "out....");
+            }
         }
 
         @Override
@@ -274,12 +296,20 @@ public class GcLoginActivity extends Activity implements LoaderCallbacks<Cursor>
         }
 
         @Override
-        protected Void doInBackground(String... arg0) {
+        protected HttpResponse doInBackground(String... arg0) {
+            JSONObject obj;
 
-            ServerComm.RestService re = new ServerComm.RestService();
-            response = re.doGet(arg0[0]);
+            InputStream inputStream = null;
+            try {
+                obj = new JSONObject(arg0[1]);
+                HttpPostFunction sChannel = new HttpPostFunction();
+                http_response = sChannel.processPost(arg0[0], obj);
+                Thread.sleep(2000);
+            } catch (Exception e) {
+                Log.d("ASYNC CATCH", "exception");
+            }
 
-            return null;
+            return http_response;
         }
     }
 
