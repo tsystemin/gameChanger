@@ -9,4 +9,5 @@
     <string name="title_activity_category">CategoryActivity</string>
     <string name="title_activity_dbhelper">DBHelper</string>
     <string name="title_activity_http_post">HttpPost</string>
+    <string name="title_activity_in_cart">InCartActivity</string>
 </resources>

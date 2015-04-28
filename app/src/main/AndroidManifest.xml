@@ -71,12 +71,20 @@
                 android:value="in.co.tsystem.gamechanger.CategoryActivity" />
         </activity>
         <activity
-            android:name=".HttpPost"
+            android:name=".HttpPostFunction"
             android:label="@string/title_activity_http_post"
             android:parentActivityName=".MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="in.co.tsystem.gamechanger.MainActivity" />
+        </activity>
+        <activity
+            android:name=".ViewCartActivity"
+            android:label="@string/title_activity_in_cart"
+            android:parentActivityName=".CategoryActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="in.co.tsystem.gamechanger.CategoryActivity" />
         </activity>
     </application>
 

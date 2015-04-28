@@ -142,12 +142,14 @@ public class GcLoginActivity extends Activity implements LoaderCallbacks<Cursor>
             // perform the user login attempt.
             showProgress(true);
 
-            String urlString = "http://192.168.0.102/opencart/?route=feed/rest_api/customerLogin&email=" + email + "&passwd=" + password + "&key=1234";
+            String urlString = "http://10.33.34.231/opencart/?route=feed/rest_api/customerLogin&email=" + email + "&passwd=" + password + "&key=1234";
 
             try {
                 myAsyncTask tsk = new myAsyncTask();
                 tsk.execute(urlString);
+                Log.d("Login Resp", response.toString());
                 if (response.optString("success") == "TRUE") {
+                    //Intent intent = new Intent(this, ViewCartActivity.class);
                     Intent intent = new Intent(this, CategoryActivity.class);
                     startActivity(intent);
                     Log.d("CATEGORY", "Inflated category");
