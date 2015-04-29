@@ -8,6 +8,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.LoaderManager.LoaderCallbacks;
+import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
@@ -148,11 +149,11 @@ public class GcLoginActivity extends Activity implements LoaderCallbacks<Cursor>
             // perform the user login attempt.
 
             showProgress(true);
-            String registerUri = "http://10.20.132.166/opencart/index.php?route=feed/rest_api/customerLogin&key=1234";
+            String registerUri = "http://10.20.104.221/opencart/index.php?route=feed/rest_api/customerLogin&key=1111";
             String postData = "{'email' : " + email + ", 'password' : " + password + "}";
 
             try {
-                myLoginAsyncTask tsk = new myLoginAsyncTask();
+                myLoginAsyncTask tsk = new myLoginAsyncTask(this);
                 tsk.execute(registerUri, postData);
             } catch (Throwable t) {
                 Log.e("My App", "Could not : " + t);
@@ -261,6 +262,11 @@ public class GcLoginActivity extends Activity implements LoaderCallbacks<Cursor>
 
     private class myLoginAsyncTask extends AsyncTask<String, Void, HttpResponse> {
 
+        private Context mContext;
+        public myLoginAsyncTask(Context context) {
+            mContext = context;
+        }
+
         @Override
         protected void onPostExecute(HttpResponse result) {
             super.onPostExecute(result);
@@ -284,6 +290,13 @@ public class GcLoginActivity extends Activity implements LoaderCallbacks<Cursor>
                 JSONObject json_result = new JSONObject(myresult);
                 String aJsonString = json_result.getString("success");
                 Log.d("ASYNC_CATCH", aJsonString);
+
+                if (aJsonString.equals("TRUE")) {
+                    Intent intent = new Intent(mContext, CategoryActivity.class);
+                    startActivity(intent);
+                } else {
+                    Log.d("ASYNC_CATCH wrong username / password", aJsonString);
+                }
             } catch (Exception e) {
                 // Oops
                 Log.d("ASYNC_CATCH", "out....");
@@ -314,4 +327,3 @@ public class GcLoginActivity extends Activity implements LoaderCallbacks<Cursor>
     }
 
 }
-

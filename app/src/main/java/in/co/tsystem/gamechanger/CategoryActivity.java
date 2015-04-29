@@ -4,53 +4,78 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageSwitcher;
 import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ViewSwitcher;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 
 public class CategoryActivity extends Activity {
+    //private static final int[] IMAGES = { R.drawable.button, R.drawable.pause };
+    //private int mPosition = 0;
+    //private ImageSwitcher mImageSwitcher;
 
-    /*private static final int[] IMAGES = { R.drawable.button, R.drawable.pause };
-    private int mPosition = 0;
-    private ImageSwitcher mImageSwitcher;
-
+    //private DataHelper dbHelper = null;
     private GridViewAdapter ga;
-    DBHelper.checkDbVer parent_tsk;
+    //myAsyncTask tsk;
+    getCategories parent_tsk;
     int newCatDbVer = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_main);
+        Log.d("Calling onCreate", "");
+
+        setContentView(R.layout.activity_category);
         String image_url = null;
 
 
-        DBHelper dbHelper = new DBHelper(this);
-        parent_tsk = dbHelper.checkDbVer();
-        tsk = new myAsyncTask(this);
+        //dbHelper = new DataHelper(this);
+
+        parent_tsk = new getCategories(this);
         parent_tsk.execute();
 
+        /*
         mImageSwitcher = (ImageSwitcher) findViewById(R.id.imageSwitcher);
         mImageSwitcher.setFactory(new ViewSwitcher.ViewFactory() {
             @Override
             public View makeView() {
-                ImageView imageView = new ImageView(CategoryActivity.this);
+                ImageView imageView = new ImageView(MainActivity.this);
                 return imageView;
             }
         });
@@ -61,19 +86,42 @@ public class CategoryActivity extends Activity {
 
         mImageSwitcher.postDelayed(new Runnable() {
             int i = 0;
-
             public void run() {
                 mImageSwitcher.setBackgroundResource(IMAGES[mPosition]);
                 mPosition = (mPosition + 1) % IMAGES.length;
                 mImageSwitcher.postDelayed(this, 3000);
             }
-        }, 3000);
+        }, 3000);*/
     }
 
+    /*
     public void onSwitch(View view) {
         mImageSwitcher.setBackgroundResource(IMAGES[mPosition]);
         mPosition = (mPosition + 1) % IMAGES.length;
     }
+*/
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
 
     public class GridViewAdapter extends BaseAdapter {
         private Context context;
@@ -126,49 +174,233 @@ public class CategoryActivity extends Activity {
                 imageView = (ImageView) convertView;
             }
             //imageView.setImageResource(icons[position]);
-            imageView.setImageBitmap(dbHelper.getBitmap(position + 1));
+            //imageView.setImageBitmap(dbHelper.getBitmap(position + 1));
             return imageView;
         }
 
 
     }
 
-        @Override
-        protected Bitmap doInBackground(Void... arg0) {
+    public class RestService {
 
-            Bitmap bitmap=null;
-            String url_new = null;
-            JSONArray categories;
-            JSONObject item;
-            ArrayList<String> urls = new ArrayList<String>();
+        public JSONObject doGet(String url) {
+            JSONObject json = null;
 
-            urls.add("http://10.0.0.112/landing/images/groceries.png");
+            HttpClient httpclient = new DefaultHttpClient();
+            // Prepare a request object
+            HttpGet httpget = new HttpGet(url);
+            // Accept JSON
+            httpget.addHeader("accept", "application/json");
+            // Execute the request
+            HttpResponse response;
 
-            for (String url_to_open : urls) {
-                try {
-                    // Download the image
-                    URL url = new URL(url_to_open);
-                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                    connection.setDoInput(true);
-                    connection.connect();
-                    InputStream is = connection.getInputStream();
-                    // Decode image to get smaller image to save memory
-                    final BitmapFactory.Options options = new BitmapFactory.Options();
-                    options.inJustDecodeBounds = false;
-                    options.inSampleSize = 4;
-                    bitmap = BitmapFactory.decodeStream(is, null, options);
-                    is.close();
-                    //dbHelper.insertBitmap(bitmap);
-                } catch (IOException e) {
-                    return null;
+            try {
+                response = httpclient.execute(httpget);
+                // Get the response entity
+                // Log.e("myApp", "Issue is here...!");
+                HttpEntity entity = response.getEntity();
+                // If response entity is not null
+                if (entity != null) {
+                    // get entity contents and convert it to string
+                    InputStream instream = entity.getContent();
+                    String result= convertStreamToString(instream);
+                    // construct a JSON object with result
+                    json=new JSONObject(result);
+                    // Closing the input stream will trigger connection release
+                    instream.close();
+                }
+            } catch (ClientProtocolException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (JSONException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            // Return the json
+            return json;
+        }
+
+        private String convertStreamToString(InputStream is) {
+
+            BufferedReader br = null;
+            StringBuilder sb = new StringBuilder();
+
+            String line;
+            try {
+
+                br = new BufferedReader(new InputStreamReader(is));
+                while ((line = br.readLine()) != null) {
+                    sb.append(line);
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (br != null) {
+                    try {
+                        br.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
-            //return url_new;
-            //dbHelper.DATABASE_VERSION = newCatDbVer;
-            return bitmap;
 
-
-            //return url_new;
+            return sb.toString();
         }
-    }*/
+    }
+
+
+    private class getCategories extends AsyncTask< Void, Void, JSONObject > {
+
+        JSONObject jb;
+        private Context mContext;
+        BufferedReader br;
+
+        private class StableArrayAdapter extends ArrayAdapter<String> {
+
+            HashMap<String, Integer> mIdMap = new HashMap<String, Integer>();
+
+            public StableArrayAdapter(Context context, int textViewResourceId,
+                                      List<String> objects) {
+                super(context, textViewResourceId, objects);
+                for (int i = 0; i < objects.size(); ++i) {
+                    mIdMap.put(objects.get(i), i);
+                }
+            }
+
+            @Override
+            public long getItemId(int position) {
+                String item = getItem(position);
+                return mIdMap.get(item);
+            }
+
+            @Override
+            public boolean hasStableIds() {
+                return true;
+            }
+
+        }
+
+        public getCategories(Context context) {
+            mContext = context;
+        }
+
+        @Override
+        protected void onPostExecute(JSONObject result) {
+            super.onPostExecute(result);
+
+            JSONArray categories;
+            JSONObject item;
+            String cat_name;
+            TextView tv;
+
+            //tv = (TextView)findViewById(R.id.textView1);
+            final ListView listview = (ListView) findViewById(R.id.listView1);
+            //arr = jb.getJSONArray('categories');
+            final ArrayList<String> list = new ArrayList<String>();
+
+
+
+            try {
+                categories = jb.getJSONArray("categories");
+                for (int i = 0; i < categories.length(); i++) {
+                    item = categories.getJSONObject(i);
+                    cat_name  = item.getString("name");
+                    list.add(cat_name);
+                    //Log.d("Type", shop.getString(i););
+                    //tv.setText(url_new);
+                    //tv.append(cat_name + "\n");
+                    Log.d("JSONPARSE cat %s", cat_name + "");
+                }
+                final StableArrayAdapter adapter = new StableArrayAdapter(mContext, android.R.layout.simple_list_item_1, list);
+                listview.setAdapter(adapter);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+/*
+            Integer db_ver_stored = 0;
+
+            try {
+                BufferedReader inputReader = new BufferedReader(new InputStreamReader(
+                        openFileInput("CartDbVer")));
+                String inputString;
+                //StringBuffer stringBuffer = new StringBuffer();
+                while ((inputString = inputReader.readLine()) != null) {
+                    //stringBuffer.append(inputString + "\n");
+                    db_ver_stored = Integer.parseInt(inputString
+                    );
+                }
+
+            } catch (IOException e) {
+                //e.printStackTrace();
+                db_ver_stored = 0;
+            }
+
+            //Log.d("DB_VER_AND", dbHelper.DATABASE_VERSION + "" );
+            Log.d("DB_VER_STORED is "+ db_ver_stored , "");
+            //if (result != dbHelper.getVersionnew()) {
+            if (result != db_ver_stored) {
+                // download catalog db
+                newCatDbVer = result;
+
+                //write version to file
+                try {
+                    FileOutputStream fos = openFileOutput("CartDbVer", Context.MODE_PRIVATE);
+                    fos.write(result.toString().getBytes());
+                    fos.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                //dbHelper.onUpgrade(dbHelper.getDb(),db_ver_stored,result);
+                //tsk.execute();
+            } else {
+                // populate grid view from database
+
+                GridView gv = (GridView)findViewById(R.id.gridview1);
+                GridViewAdapter ga1 = new GridViewAdapter(mContext);
+                gv.setAdapter(ga1);
+
+                gv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    public void onItemClick(AdapterView<?> parent,
+                                            View view, int position, long id) {
+                        Toast.makeText(MainActivity.this, "" + position,
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+            }
+*/
+
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected JSONObject doInBackground(Void... arg0) {
+
+            String url_new = null, ret = null;
+            int version = 0;
+
+            url_new = "http://10.20.104.221/opencart/?route=feed/rest_api/categories&key=1111";
+            RestService re = new RestService();
+            jb = re.doGet(url_new);
+            try {
+                ret = jb.getString("success");
+
+                Log.i("JSONPARSE return is %s", ret + "");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return jb;
+        }
+    }
 }
+

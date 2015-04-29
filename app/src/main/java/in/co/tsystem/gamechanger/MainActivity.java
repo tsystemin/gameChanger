@@ -231,6 +231,9 @@ public class MainActivity extends Activity implements View.OnClickListener,
     public void gc_login(View view) {
         Intent intent = new Intent(this, GcLoginActivity.class);
         startActivity(intent);
+
+        //Intent intent = new Intent(this, CategoryActivity.class);
+        //startActivity(intent);
     }
 
     public void gc_register(View view) {
