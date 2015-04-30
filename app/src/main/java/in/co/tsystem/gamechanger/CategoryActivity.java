@@ -389,7 +389,7 @@ public class CategoryActivity extends Activity {
             String url_new = null, ret = null;
             int version = 0;
 
-            url_new = "http://10.20.32.199/opencart/?route=feed/rest_api/categories&key=1234";
+            url_new = "http://10.20.132.145/opencart/?route=feed/rest_api/categories&key=1234";
             RestService re = new RestService();
             jb = re.doGet(url_new);
             try {

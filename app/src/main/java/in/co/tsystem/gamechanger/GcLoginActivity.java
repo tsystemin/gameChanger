@@ -149,7 +149,7 @@ public class GcLoginActivity extends Activity implements LoaderCallbacks<Cursor>
             // perform the user login attempt.
 
             showProgress(true);
-            String registerUri = "http://10.20.32.199/opencart/index.php?route=feed/rest_api/customerLogin&key=1234";
+            String registerUri = "http://10.20.132.145/opencart/index.php?route=feed/rest_api/customerLogin&key=1234";
             String postData = "{'email' : " + email + ", 'password' : " + password + "}";
 
             try {

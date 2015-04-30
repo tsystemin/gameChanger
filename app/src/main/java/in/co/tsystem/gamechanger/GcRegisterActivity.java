@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.LoaderManager;
+import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
@@ -26,9 +27,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,7 +47,8 @@ public class GcRegisterActivity extends Activity implements LoaderManager.Loader
     private AutoCompleteTextView mEmailView, mNameView, mPhoneView, mAddrView;
     private EditText mPasswordView, mCPasswordView;
     private View mProgressView, mRegisterFormView;
-    HttpResponse response;
+  //  HttpResponse response;
+    HttpResponse http_response;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -187,12 +193,12 @@ public class GcRegisterActivity extends Activity implements LoaderManager.Loader
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            String registerUri = "http://10.20.32.199/opencart/index.php?route=feed/rest_api/addNewCustomer";
+            String registerUri = "http://10.20.132.145/opencart/index.php?route=feed/rest_api/addNewCustomer";
             String postData = "{'firstname' : " + firstname + ", 'lastname' : " + lastname +
                     ", 'email' : " + email + ", 'telephone' : " + phone +
-                    ", 'password' : " + password + ", 'address' : " + address + "}";
+                    ", 'password' : " + password + ", 'address_1' : " + address + "}";
             try {
-                myRegAsyncTask tsk = new myRegAsyncTask();
+                myRegAsyncTask tsk = new myRegAsyncTask(this);
                 tsk.execute(registerUri, postData);
             } catch (Throwable t) {
                 Log.e("My App", "Could not : " + t);
@@ -330,12 +336,49 @@ public class GcRegisterActivity extends Activity implements LoaderManager.Loader
     // Async task to send register request in a separate thread
     private class myRegAsyncTask extends AsyncTask<String, Void, HttpResponse> {
 
+
+
+        private Context mContext;
+        public myRegAsyncTask(Context context) {
+            mContext = context;
+        }
+
         @Override
         protected void onPostExecute(HttpResponse result) {
             super.onPostExecute(result);
             showProgress(false);
             mRegisterFormView.setVisibility(View.GONE);
+            try {
+                HttpEntity entity = result.getEntity();
+                InputStream inputStream = null;
+                String myresult = null;
+
+                inputStream = entity.getContent();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
+                StringBuilder sb = new StringBuilder();
+
+                String line = null;
+                while ((line = reader.readLine()) != null)
+                {
+                    sb.append(line + "\n");
+                }
+                myresult = sb.toString();
+                JSONObject json_result = new JSONObject(myresult);
+                String aJsonString = json_result.getString("success");
+                Log.d("ASYNC_CATCH", aJsonString);
+
+                if (aJsonString.equals("TRUE")) {
+                    Intent intent = new Intent(mContext, CategoryActivity.class);
+                    startActivity(intent);
+                } else {
+                    Log.d("ASYNC_CATCH wrong username / password", aJsonString);
+                }
+            } catch (Exception e) {
+                // Oops
+                Log.d("ASYNC_CATCH", "out....");
+            }
         }
+
 
         @Override
         protected void onPreExecute() {
@@ -348,13 +391,13 @@ public class GcRegisterActivity extends Activity implements LoaderManager.Loader
             try {
                 obj = new JSONObject(arg0[1]);
                 HttpPostFunction sChannel = new HttpPostFunction();
-                response = sChannel.processPost(arg0[0], obj);
+                http_response = sChannel.processPost(arg0[0], obj);
                 Thread.sleep(2000);
             } catch (Exception e) {
                 Log.d("ASYNC CATCH", "exception");
             }
 
-            return response;
+            return http_response;
         }
     }
 }
