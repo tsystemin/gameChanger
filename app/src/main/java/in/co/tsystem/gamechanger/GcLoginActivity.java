@@ -60,7 +60,6 @@ public class GcLoginActivity extends Activity implements LoaderCallbacks<Cursor>
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
-    private JSONObject response;
     HttpResponse http_response;
 
     @Override
@@ -73,6 +72,7 @@ public class GcLoginActivity extends Activity implements LoaderCallbacks<Cursor>
         populateAutoComplete();
 
         mPasswordView = (EditText) findViewById(R.id.password);
+
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
@@ -123,11 +123,11 @@ public class GcLoginActivity extends Activity implements LoaderCallbacks<Cursor>
         View focusView = null;
 
         // Check for a valid password, if the user entered one.
-        /*if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
+        if (TextUtils.isEmpty(password)) {
             mPasswordView.setError(getString(R.string.error_invalid_password));
             focusView = mPasswordView;
             cancel = true;
-        }*/
+        }
 
         // Check for a valid email address.
         if (TextUtils.isEmpty(email)) {
@@ -149,7 +149,11 @@ public class GcLoginActivity extends Activity implements LoaderCallbacks<Cursor>
             // perform the user login attempt.
 
             showProgress(true);
+<<<<<<< Updated upstream
             String registerUri = "http://10.20.132.145/opencart/index.php?route=feed/rest_api/customerLogin&key=1234";
+=======
+            String registerUri = "http://192.168.0.103/opencart/index.php?route=feed/rest_api/customerLogin&key=1234";
+>>>>>>> Stashed changes
             String postData = "{'email' : " + email + ", 'password' : " + password + "}";
 
             try {

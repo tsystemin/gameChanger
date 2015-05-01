@@ -1,24 +1,25 @@
 package in.co.tsystem.gamechanger;
 
+import android.app.ListActivity;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 
-public class ViewCartActivity extends ActionBarActivity {
+
+public class ViewCartActivity extends ListActivity {
     private JSONObject response;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_cart);
 

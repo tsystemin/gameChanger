@@ -96,16 +96,6 @@ public class GcRegisterActivity extends Activity implements LoaderManager.Loader
             }
         });
 
-        Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
-        mEmailSignInButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mRegisterFormView.setVisibility(true ? View.GONE : View.VISIBLE);
-                Intent intent = new Intent(getApplicationContext(), GcLoginActivity.class);
-                startActivity(intent);
-            }
-        });
-
     }
 
     private void populateAutoComplete() {
@@ -141,7 +131,11 @@ public class GcRegisterActivity extends Activity implements LoaderManager.Loader
             mPasswordView.setError(getString(R.string.error_invalid_password));
             focusView = mPasswordView;
             cancel = true;
-        }
+        } /*else if (!isPasswordValid(password)) {
+            mPasswordView.setError(getString(R.string.error_invalid_password));
+            focusView = mPasswordView;
+            cancel = true;
+        }*/
 
         // Check for a valid name
         if (TextUtils.isEmpty(name)) {
@@ -149,7 +143,7 @@ public class GcRegisterActivity extends Activity implements LoaderManager.Loader
             focusView = mNameView;
             cancel = true;
         } /*else if (!isNameValid(name)) {
-            mNameView.setError(getString(R.string.error_invalid_email));
+            mNameView.setError(getString(R.string.error_invalid_name));
             focusView = mNameView;
             cancel = true;
         }*/ else {
@@ -174,11 +168,11 @@ public class GcRegisterActivity extends Activity implements LoaderManager.Loader
             mPhoneView.setError(getString(R.string.error_field_required));
             focusView = mPhoneView;
             cancel = true;
-        } /*else if (!isPhoneValid(phone)) {
+        } else if (!isPhoneValid(phone)) {
             mPhoneView.setError(getString(R.string.error_incorrect_phone));
             focusView = mPhoneView;
             cancel = true;
-        }*/
+        }
 
         // Check for valid address
         if (TextUtils.isEmpty(address)) {
@@ -193,7 +187,11 @@ public class GcRegisterActivity extends Activity implements LoaderManager.Loader
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
+<<<<<<< Updated upstream
             String registerUri = "http://10.20.132.145/opencart/index.php?route=feed/rest_api/addNewCustomer";
+=======
+            String registerUri = "http://192.168.0.103/opencart/index.php?route=feed/rest_api/addNewCustomer";
+>>>>>>> Stashed changes
             String postData = "{'firstname' : " + firstname + ", 'lastname' : " + lastname +
                     ", 'email' : " + email + ", 'telephone' : " + phone +
                     ", 'password' : " + password + ", 'address_1' : " + address + "}";
@@ -210,7 +208,7 @@ public class GcRegisterActivity extends Activity implements LoaderManager.Loader
 
     private boolean isNameValid(String name) {
         //TODO: Put more checking logic
-        if (name.contains("[a-zA-Z]")) {
+        if (name.matches("[a-z]") && name.matches("\\s")) {
             return true;
         }
 
@@ -219,7 +217,7 @@ public class GcRegisterActivity extends Activity implements LoaderManager.Loader
 
     private boolean isPhoneValid(String phone) {
         //TODO: Put more checking logic
-        if (phone.contains("[0-9]")) {
+        if (phone.matches("[0-9]{10}") || phone.matches("[0-9]{11}")) {
             return true;
         }
 
@@ -237,7 +235,7 @@ public class GcRegisterActivity extends Activity implements LoaderManager.Loader
 
     private boolean isPasswordValid(String password) {
         //TODO: Put more checking logic
-        if ((password.length() > 4)) {
+        if ((password.length() > 4) && password.matches("[a-z]") && password.matches("[0-9]") && password.matches("[A-Z]")) {
             return true;
         }
         return false;
@@ -336,8 +334,11 @@ public class GcRegisterActivity extends Activity implements LoaderManager.Loader
     // Async task to send register request in a separate thread
     private class myRegAsyncTask extends AsyncTask<String, Void, HttpResponse> {
 
+<<<<<<< Updated upstream
 
 
+=======
+>>>>>>> Stashed changes
         private Context mContext;
         public myRegAsyncTask(Context context) {
             mContext = context;
@@ -349,7 +350,11 @@ public class GcRegisterActivity extends Activity implements LoaderManager.Loader
             showProgress(false);
             mRegisterFormView.setVisibility(View.GONE);
             try {
+<<<<<<< Updated upstream
                 HttpEntity entity = result.getEntity();
+=======
+                HttpEntity entity = response.getEntity();
+>>>>>>> Stashed changes
                 InputStream inputStream = null;
                 String myresult = null;
 
@@ -365,7 +370,11 @@ public class GcRegisterActivity extends Activity implements LoaderManager.Loader
                 myresult = sb.toString();
                 JSONObject json_result = new JSONObject(myresult);
                 String aJsonString = json_result.getString("success");
+<<<<<<< Updated upstream
                 Log.d("ASYNC_CATCH", aJsonString);
+=======
+                Log.d("ASYNC_CATCH", myresult);
+>>>>>>> Stashed changes
 
                 if (aJsonString.equals("TRUE")) {
                     Intent intent = new Intent(mContext, CategoryActivity.class);
